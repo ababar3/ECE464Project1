@@ -1,6 +1,7 @@
 # ECE464Project1
 
 %Point 1%
+
 Read the circuit
 
 Compose gate
@@ -10,6 +11,7 @@ Find the Fault list (complete one!) -> Go to gate, SA-0/1 for output + output in
                                     -> Create a counter to know which the number of total fault
 
 %Point 2%
+
 Read the circuit
 
 Create circuit and simulate it -> save outputs of the correct circuit
