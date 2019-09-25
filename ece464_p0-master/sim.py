@@ -116,7 +116,6 @@ def netRead(netName):
             line = line.replace("OUTPUT", "")
             line = line.replace("(", "")
             line = line.replace(")", "")
-            #faults+=1
             #output.write(line + "-SA-0\n")
             #output.write(line + "-SA-1\n")
 
@@ -128,9 +127,8 @@ def netRead(netName):
         if "=" in line:
             # Removing everything but the numbers
             line = line.split("=")
+            #print(line)
 
-
-            print(line)
             #line = line.replace("(", "")
             #line = line.replace(")", "")
             #print(line)
@@ -147,9 +145,15 @@ def netRead(netName):
                 var= var.replace("NOT", "")
                 var= var.replace("(", "")
                 var= var.replace(")", "")
-                output.write(temp+ "-IN-" + var + "-SA-0\n")
-                output.write(temp + "-IN-" + var + "-SA-1\n")
-                faults += 2
+                if "," in var:
+                    var = var.split(",")
+                i = 0
+                k = len(var)
+                while (i < k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults += 2
+                    i += 1
 
                 #outputs.append("wire_" + temp)
                 #outputs.append("wire_" + var)
@@ -159,14 +163,18 @@ def netRead(netName):
                 var = var.replace("(", "")
                 var = var.replace(")", "")
                 var = var.split(",")
+                print(var)
                 print(temp + "-IN-" + var[0] + "-SA-0\n")
-                output.write(temp + "-IN-" + var[0] + "-SA-0\n")
-                output.write(temp + "-IN-" + var[0] + "-SA-1\n")
-                output.write(temp + "-IN-" + var[1] + "-SA-0\n")
-                output.write(temp + "-IN-" + var[1] + "-SA-1\n")
+                i = 0
+                k =len(var)
+                while(i<k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults+=2
+                    i+=1
+
                 # outputs.append("wire_" + temp)
                 # outputs.append("wire_" + var)
-                faults += 4
 
 
             elif var[0:2] == "OR":
@@ -175,11 +183,87 @@ def netRead(netName):
                 var = var.replace(")", "")
                 var = var.split(",")
                 print(temp + "-IN-" + var[0] + "-SA-0\n")
-                output.write(temp + "-IN-" + var[0] + "-SA-0\n")
-                output.write(temp + "-IN-" + var[0] + "-SA-1\n")
-                output.write(temp + "-IN-" + var[1] + "-SA-0\n")
-                output.write(temp + "-IN-" + var[1] + "-SA-1\n")
-                faults += 4
+                i = 0
+                k = len(var)
+                while (i < k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults += 2
+                    i += 1
+
+            elif var[0:3] == "NOR":
+                var = var.replace("NOR", "")
+                var = var.replace("(", "")
+                var = var.replace(")", "")
+                var = var.split(",")
+                print(temp + "-IN-" + var[0] + "-SA-0\n")
+                i = 0
+                k = len(var)
+                while (i < k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults += 2
+                    i += 1
+
+            elif var[0:3] == "XOR":
+                var = var.replace("XOR", "")
+                var = var.replace("(", "")
+                var = var.replace(")", "")
+                var = var.split(",")
+                print(temp + "-IN-" + var[0] + "-SA-0\n")
+                i = 0
+                k = len(var)
+                while (i < k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults += 2
+                    i += 1
+
+            elif var[0:4] == "NAND":
+                var = var.replace("NAND", "")
+                var = var.replace("(", "")
+                var = var.replace(")", "")
+                var = var.split(",")
+                print(var)
+                print(temp + "-IN-" + var[0] + "-SA-0\n")
+                i = 0
+                k =len(var)
+                while(i<k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults +=2
+                    i +=1
+
+            elif var[0:4] == "BUFF":
+                var = var.replace("BUFF", "")
+                var = var.replace("(", "")
+                var = var.replace(")", "")
+                var = var.split(",")
+                print(var)
+                print(temp + "-IN-" + var[0] + "-SA-0\n")
+                i = 0
+                k = len(var)
+                while (i < k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults += 2
+                    i += 1
+
+            elif var[0:4] == "XNOR":
+                var = var.replace("XNOR", "")
+                var = var.replace("(", "")
+                var = var.replace(")", "")
+                var = var.split(",")
+                print(var)
+                print(temp + "-IN-" + var[0] + "-SA-0\n")
+                i = 0
+                k = len(var)
+                while (i < k):
+                    output.write(temp + "-IN-" + var[i] + "-SA-0\n")
+                    output.write(temp + "-IN-" + var[i] + "-SA-1\n")
+                    faults += 2
+                    i += 1
+
             continue
 
         # Read a gate output wire, and add to the circuit dictionary
