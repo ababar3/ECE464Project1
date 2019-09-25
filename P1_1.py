@@ -31,7 +31,7 @@ def FaultList(netName):
         line = line.replace("\n","")
 
         if (line[0:5] == "INPUT"):
-            print("Input reading")
+            
             line = line.replace("INPUT", "")
             line = line.replace("(", "")
             line = line.replace(")", "")
@@ -63,7 +63,7 @@ def FaultList(netName):
 
         print(inputs)
         if line[0:6] == "OUTPUT":
-            print("Output reading")
+            
             # Removing everything but the numbers
             line = line.replace("OUTPUT", "")
             line = line.replace("(", "")
