@@ -224,7 +224,7 @@ def gateCalc(circuit, node):
         else:  # Otherwise, the output is equal to how many 1's there are
             circuit[node][3] = '0'
         return circuit
-
+    
     # If the node is an XNOR gate output, solve and return the output
     elif circuit[node][0] == "XNOR":
         # Initialize a variable to zero, to count how many 1's in the terms
