@@ -339,6 +339,7 @@ def good_sim(circuit)
 
 def bad_sim(circuit,fault):
     queue = list(circuit["GATES"][1])
+    input_check = list(circuit["INPUTS"][1])
     i = 1
 
     while True:
@@ -346,12 +347,19 @@ def bad_sim(circuit,fault):
         # If there's no more things in queue, done
         if len(queue) == 0:
             break
+        if len(input_check) == 0:
+            break
+        # Remove the first element of the queue and assign it to a variable for us to use
 
+        InputCurr = input_check[0]
         # Remove the first element of the queue and assign it to a variable for us to use
         curr = queue[0]
         queue.remove(curr)
 
         bad_wire = "wire_"+fault[0]
+        if bad_wire == InputCurr:
+            circuit[InputCurr][3] = fault [1]
+
 
         if (bad_wire) in curr:
 
@@ -453,3 +461,116 @@ def main():
     inputFile = open(inputName,"r")
     inpFault = open(inputFault,"r")
     outputFile = open(outputName,"w")
+    
+    faultList = []
+    RequiredFault = []
+    undetected = []
+    bad_output = []
+    fault = []
+    output = []
+    good_output = []
+    i = 0
+    j = 0
+    outputFile.write("#fault sim result\n")
+    outputFile.write("#input: circuit\n")
+    outputFile.write("#input: " + inputName + "\n")
+    outputFile.write("#input: " + FaultName + "\n")
+    outputFile.write("\n")
+
+    print("Simulation begins")
+    for line in inputFile:
+
+        if (line == "\n"):
+            continue
+        if (line[0] == "#"):
+            continue
+
+        line = line.replace("\n", "")
+
+        circuit = inputRead(circuit,line)
+        circuit = good_sim(circuit)
+
+        for y in circuit["OUTPUTS"][1]:
+            if not circuit[y][2]:
+                output[i] = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
+                break
+            output.append(str(circuit[y][3]))
+        good_output.append(output[i])
+        i += 1
+        print("Output of the good circuit:" + good_output[i-1] + "\n")
+        outputFile.write("\ntv%d = %s ->  %s \n" %(i, line, good_output[i-1]))
+        outputFile.write("detected:\n")
+
+        faultList = inputFault.readlines()
+        faultList = [x.strip() for x in faultList]
+        iteration = 0
+
+        while iteration < len(faultList):
+            if (faultList[iteration] == ""):
+                iteration += 1
+                continue
+            if "#" in faultList[iteration]:
+                iteration += 1
+                continue
+
+            if "-SA-" in faultList[iteration]:
+                RequiredFault.append(faultList[iteration])
+                fault = FaultReader(faultList[iteration])
+                iteration += 1
+                j += 1
+            else:
+                print("Error in file format, line that is no comment and no fault.")
+                return -1
+
+            circuit = bad_sim(circuit, fault)
+            print("This is the simulation with the fault #: %d" %j)
+            for y in circuit["OUTPUTS"][1]:
+                if not circuit[y][2]:
+                    output[j-1] = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
+                    break
+                bad_output.append(str(circuit[y][3]))
+
+            if (bad_output[j-1] == good_output[i-1]):
+                if i < 2:
+                    undetected.append(RequiredFault[j-1])
+
+            else:
+                if RequiredFault[j-1] in undetected:
+                    undetected.remove(RequiredFault[iteration])
+
+
+
+        i = 0
+        print(bad_output)
+        print(RequiredFault)
+        print(good_output)
+        while (i < len(good_output)):
+            k = j
+
+            while (k>=0):
+
+                if (bad_output[k-1] != good_output[i]):
+                    outputFile.write("%s: %s -> %s\n" %(RequiredFault[j-k-1],line, bad_output[k-1]))
+                    k -= 1
+                else:
+                    k -= 1
+
+            i += 1
+
+    print(undetected)
+    unFaults = len(undetected)
+    detected = j-unFaults
+    outputFile.write("\nundetected faults: %d\n" %detected)
+    for x in undetected:
+        outputFile.write(x + "\n")
+
+    percentage = detected/j*100
+    outputFile.write("fault coverage: %d/%d = %d" %(detected, j, percentage))
+    outputFile.write('%')
+    outputFile.close()
+
+
+
+
+if __name__ == "__main__":
+    main()
