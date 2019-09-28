@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-
+import copy
 # FUNCTION: Neatly prints the Circuit Dictionary:
 def printCkt(circuit):
     print("INPUT LIST:")
@@ -47,7 +47,6 @@ def NetReader(netName):
         line = line.replace("\n", "")
 
         if (line[0:5] == "INPUT"):
-            print("Input reading")
             line = line.replace("INPUT", "")
             line = line.replace("(", "")
             line = line.replace(")", "")
@@ -63,8 +62,10 @@ def NetReader(netName):
 
             # Appending to the inputs array and update the inputBits
             inputs.append(line)
+            inputBits += 1
             # add this wire as an entry to the circuit dictionary
             circuit[line] = ["INPUT", line, False, 'U']
+            print(circuit[line])
             continue
 
         if line[0:6] == "OUTPUT":
@@ -88,10 +89,13 @@ def NetReader(netName):
             # Appending the dest name to the gate list
         gates.append(gateOut)
 
-        logic = lineSpliced[0].upper
-        lineSpliced[1] = lineSpliced[1].replace(")", "")
+        lineSpliced = lineSpliced[1].split("(")  # splicing the line again at the "("  to get the gate logic
+        logic = lineSpliced[0].upper()
 
-        terms = lineSpliced[1].split(",")
+        lineSpliced[1] = lineSpliced[1].replace(")", "")
+        terms = lineSpliced[1].split(",")  # Splicing the the line again at each comma to the get the gate terminals
+        # Turning each term into an integer before putting it into the circuit dictionary
+        terms = ["wire_" + x for x in terms]
 
 
         # add the gate output wire to the circuit dictionary with the dest as the key
@@ -101,6 +105,12 @@ def NetReader(netName):
         circuit["INPUTS"] = ["Input list", inputs]
         circuit["OUTPUTS"] = ["Output list", outputs]
         circuit["GATES"] = ["Gate list", gates]
+
+        print("\n bookkeeping items in circuit: \n")
+        print(circuit["INPUT_WIDTH"])
+        print(circuit["INPUTS"])
+        print(circuit["OUTPUTS"])
+        print(circuit["GATES"])
 
     return circuit
 
@@ -224,7 +234,7 @@ def gateCalc(circuit, node):
         else:  # Otherwise, the output is equal to how many 1's there are
             circuit[node][3] = '0'
         return circuit
-    
+
     # If the node is an XNOR gate output, solve and return the output
     elif circuit[node][0] == "XNOR":
         # Initialize a variable to zero, to count how many 1's in the terms
@@ -244,7 +254,16 @@ def gateCalc(circuit, node):
         else:  # Otherwise, the output is equal to how many 1's there are
             circuit[node][3] = '0'
         return circuit
-
+    elif circuit[node][0] == "BUFF":
+        if circuit[terminals[0]][3] == '0':
+            circuit[node][3] = '0'
+        elif circuit[terminals[0]][3] == '1':
+            circuit[node][3] = '1'
+        elif circuit[terminals[0]][3] == "U":
+            circuit[node][3] = "U"
+        else:  # Should not be able to come here
+            return -1
+        return circuit
     # Error detection... should not be able to get at this point
     return circuit[node][0]
 
@@ -280,18 +299,19 @@ def FaultReader(line):
         print("Error in the format")
         return -1
 
+    #This condition allows to accept inputs with a name long no more than 5 characters
     if (len(line) > 10):
-        line = line.replace("-SA-","")
+        line = line.replace("-SA","")
         line = line.replace("IN-","")
         line = line.split("-")
-        fault = line[1]
+        fault = [line[1], line[2]]
     else:
-        fault = line.replace("-SA-","")
+        line = line.replace("-SA","")
+        line = line.split("-")
+        fault = line
     return fault
 
-def good_sim(circuit)
-    # QUEUE and DEQUEUE
-    # Creating a queue, using a list, containing all of the gates in the circuit
+def good_sim(circuit):
     queue = list(circuit["GATES"][1])
     i = 1
 
@@ -310,7 +330,6 @@ def good_sim(circuit)
 
         # Check if the terminals have been accessed
         for term in circuit[curr][1]:
-            #wire presence check
             if not circuit[term][2]:
                 term_has_value = False
                 break
@@ -337,35 +356,41 @@ def good_sim(circuit)
 
     return circuit
 
+def Fault_Input(circuit, fault):
+    Input_check = list(circuit["INPUTS"][1])
+
+    bad_wire = "wire_" + fault[0]
+
+    for line in Input_check:
+        if line == bad_wire:
+            circuit[line][3] = fault[1]
+            break
+    print(circuit)
+    return circuit
+
 def bad_sim(circuit,fault):
     queue = list(circuit["GATES"][1])
-    input_check = list(circuit["INPUTS"][1])
-    i = 1
 
     while True:
-        i -= 1
+
         # If there's no more things in queue, done
         if len(queue) == 0:
             break
-        if len(input_check) == 0:
-            break
+        bad_wire = "wire_" + fault[0]
+
         # Remove the first element of the queue and assign it to a variable for us to use
 
-        InputCurr = input_check[0]
-        # Remove the first element of the queue and assign it to a variable for us to use
         curr = queue[0]
         queue.remove(curr)
 
-        bad_wire = "wire_"+fault[0]
-        if bad_wire == InputCurr:
-            circuit[InputCurr][3] = fault [1]
 
-
-        if (bad_wire) in curr:
+        if bad_wire == curr:
 
             circuit[curr][3] = fault[1]
+            continue
 
-        else
+        else:
+
 
             term_has_value = True
 
@@ -377,7 +402,9 @@ def bad_sim(circuit,fault):
                     break
 
             if term_has_value:
+
                 circuit[curr][2] = True
+
                 circuit = gateCalc(circuit, curr)
 
                 # ERROR Detection if LOGIC does not exist
@@ -414,33 +441,34 @@ def main():
             else:
                 break
 
-    circuit = netRead(cktFile)
+    circuit = NetReader(cktFile)
     print("\n Finished processing benchmark file and built netlist dictionary: \n")
 
     print(circuit)
 
-    newCircuit = circuit
+    NewCircuit = copy.deepcopy(circuit)
 
     while True:
         inputName = "input.txt"
-        inputFault = "f_list"
+        FaultName = "f_list.txt"
         print("\n Read input vector file: use " + inputName + "?" + " Enter to accept or type filename: ")
         userInput = input()
-        if userInput == "":
 
-            continue
+        if userInput == "":
+            break
         else:
             inputName = os.path.join(script_dir, userInput)
             if not os.path.isfile(inputName):
                 print("File does not exist. \n")
                 return
 
-        print("\n Read input vector file: use " + inputFault + "?" + " Enter to accept or type filename: ")
+    while True:
+        print("\n Read fault file: use " + FaultName + "?" + " Enter to accept or type filename: ")
         userInput = input()
         if userInput == "":
             break
         else:
-            inputFault = os.path.join(script_dir, userInput)
+            FaultName = os.path.join(script_dir, userInput)
             if not os.path.isfile(inputFault):
                 print("File does not exist. \n")
             else:
@@ -459,23 +487,25 @@ def main():
             break
 
     inputFile = open(inputName,"r")
-    inpFault = open(inputFault,"r")
+    inputFault = open(FaultName,"r")
     outputFile = open(outputName,"w")
-    
+
     faultList = []
-    RequiredFault = []
+
     undetected = []
-    bad_output = []
+
     fault = []
     output = []
     good_output = []
     i = 0
-    j = 0
     outputFile.write("#fault sim result\n")
     outputFile.write("#input: circuit\n")
     outputFile.write("#input: " + inputName + "\n")
     outputFile.write("#input: " + FaultName + "\n")
     outputFile.write("\n")
+
+    faultList = inputFault.readlines()
+    faultList = [x.strip() for x in faultList]
 
     print("Simulation begins")
     for line in inputFile:
@@ -487,25 +517,28 @@ def main():
 
         line = line.replace("\n", "")
 
+        j = 0
+        bad_output = []
+
         circuit = inputRead(circuit,line)
         circuit = good_sim(circuit)
-
+        RequiredFault = []
         for y in circuit["OUTPUTS"][1]:
             if not circuit[y][2]:
                 output[i] = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                 break
             output.append(str(circuit[y][3]))
         good_output.append(output[i])
-        i += 1
-        print("Output of the good circuit:" + good_output[i-1] + "\n")
-        outputFile.write("\ntv%d = %s ->  %s \n" %(i, line, good_output[i-1]))
+
+        print("Output of the good circuit:" + good_output[i] + "\n")
+        outputFile.write("\ntv%d = %s ->  %s \n" %(i+1, line, good_output[i]))
         outputFile.write("detected:\n")
 
-        faultList = inputFault.readlines()
-        faultList = [x.strip() for x in faultList]
+
         iteration = 0
 
         while iteration < len(faultList):
+            circuit = inputRead(circuit, line)
             if (faultList[iteration] == ""):
                 iteration += 1
                 continue
@@ -516,51 +549,57 @@ def main():
             if "-SA-" in faultList[iteration]:
                 RequiredFault.append(faultList[iteration])
                 fault = FaultReader(faultList[iteration])
+                print("This is the simulation with the fault #: %d" %(j+1))
+                print(fault)
                 iteration += 1
                 j += 1
             else:
                 print("Error in file format, line that is no comment and no fault.")
                 return -1
 
+            circuit = Fault_Input(circuit,fault)
             circuit = bad_sim(circuit, fault)
-            print("This is the simulation with the fault #: %d" %j)
+
             for y in circuit["OUTPUTS"][1]:
                 if not circuit[y][2]:
                     output[j-1] = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                     break
                 bad_output.append(str(circuit[y][3]))
 
-            if (bad_output[j-1] == good_output[i-1]):
-                if i < 2:
+
+            if (bad_output[j-1] == good_output[i]):
+                if i < 1:
                     undetected.append(RequiredFault[j-1])
 
             else:
                 if RequiredFault[j-1] in undetected:
-                    undetected.remove(RequiredFault[iteration])
+                    undetected.remove(RequiredFault[j-1])
+
+            circuit = copy.deepcopy(NewCircuit)
 
 
 
-        i = 0
-        print(bad_output)
         print(RequiredFault)
+        print(bad_output)
         print(good_output)
         while (i < len(good_output)):
             k = j
 
-            while (k>=0):
+            while (k>0):
 
-                if (bad_output[k-1] != good_output[i]):
-                    outputFile.write("%s: %s -> %s\n" %(RequiredFault[j-k-1],line, bad_output[k-1]))
+                if (bad_output[j-k-1] != good_output[i]):
+                    outputFile.write("%s: %s -> %s\n" %(RequiredFault[j-k-1],line, bad_output[j-k-1]))
                     k -= 1
                 else:
                     k -= 1
-
             i += 1
+
 
     print(undetected)
     unFaults = len(undetected)
     detected = j-unFaults
-    outputFile.write("\nundetected faults: %d\n" %detected)
+    outputFile.write("\nTotal detected faults: %d\n" %detected)
+    outputFile.write("\nundetected faults: %d\n" %unFaults)
     for x in undetected:
         outputFile.write(x + "\n")
 
@@ -568,9 +607,6 @@ def main():
     outputFile.write("fault coverage: %d/%d = %d" %(detected, j, percentage))
     outputFile.write('%')
     outputFile.close()
-
-
-
 
 if __name__ == "__main__":
     main()
