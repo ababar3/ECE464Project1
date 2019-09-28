@@ -365,7 +365,7 @@ def Fault_Input(circuit, fault):
         if line == bad_wire:
             circuit[line][3] = fault[1]
             break
-    print(circuit)
+
     return circuit
 
 def bad_sim(circuit,fault):
@@ -387,14 +387,11 @@ def bad_sim(circuit,fault):
         if bad_wire == curr:
 
             circuit[curr][3] = fault[1]
-            continue
-
+            print(circuit)
         else:
-
-
             term_has_value = True
 
-            # Check if the terminals have been accessed
+                # Check if the terminals have been accessed
             for term in circuit[curr][1]:
                 # wire presence check
                 if not circuit[term][2]:
@@ -413,14 +410,14 @@ def bad_sim(circuit,fault):
                     return circuit
 
                 print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][
-                    0] + " for:")
+                        0] + " for:")
                 for term in circuit[curr][1]:
                     print(term + " = " + circuit[term][3])
                 print("\nPress Enter to Continue...")
                 input()
 
-            else:
                 # If the terminals have not been accessed yet, append the current node at the end of the queue
+            else:
                 queue.append(curr)
 
     return circuit
@@ -562,18 +559,18 @@ def main():
 
             for y in circuit["OUTPUTS"][1]:
                 if not circuit[y][2]:
-                    output[j-1] = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
+                    output = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                     break
                 bad_output.append(str(circuit[y][3]))
 
 
-            if (bad_output[j-1] == good_output[i]):
-                if i < 1:
-                    undetected.append(RequiredFault[j-1])
+                if (bad_output[j-1] == good_output[i]):
+                    if i < 1:
+                        undetected.append(RequiredFault[j-1])
 
-            else:
-                if RequiredFault[j-1] in undetected:
-                    undetected.remove(RequiredFault[j-1])
+                else:
+                    if RequiredFault[j-1] in undetected:
+                        undetected.remove(RequiredFault[j-1])
 
             circuit = copy.deepcopy(NewCircuit)
 
