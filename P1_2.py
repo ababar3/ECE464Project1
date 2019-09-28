@@ -387,6 +387,7 @@ def bad_sim(circuit,fault):
         if bad_wire == curr:
 
             circuit[curr][3] = fault[1]
+            circuit[curr][2] = True
             print(circuit)
         else:
             term_has_value = True
