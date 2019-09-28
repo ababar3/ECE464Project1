@@ -23,8 +23,4 @@ Create # bad circuits, each with a different fault of the list
 
 Read the TV (ordered from LSB to MSB)
 
-Test each TV on each faulty circuit  and check if the output is different to the good one or not
-Different?
-        YES: Fault detected -> flag 1 to be sure it is detected and print good and bad behaviour
-        NO: Flag stays 0
- At the end print undetected faults.
+Test each TV on each faulty circuit  and check if the output is different to the good one or not. If it is different -> upload the detected list and remove it from undetected.
