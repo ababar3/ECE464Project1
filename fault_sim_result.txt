@@ -1,0 +1,22 @@
+#fault sim result
+#input: circuit
+#input: input.txt
+#input: f_list.txt
+
+
+tv1 = 010 ->  0 
+detected:
+
+tv2 = 111 ->  1 
+detected:
+
+tv3 = 110 ->  0 
+detected:
+
+Total detected faults: 3
+
+undetected faults: 2
+g-IN-B-SA-1
+A-SA-0
+
+fault coverage: 3/5 = 60%
