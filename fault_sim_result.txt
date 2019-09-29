@@ -1,0 +1,8 @@
+#fault sim result
+#input: circuit
+#input: c:/Users/Szymon/Documents/Coding and Programming/Visual Studio Code/ECE464/Project1-464\ETV_set 0.txt
+#input: f_list.txt
+
+
+tv1 = 000000000000000000000000000000000000 ->  0 
+detected:
