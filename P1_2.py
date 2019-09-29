@@ -19,6 +19,118 @@ def printCkt(circuit):
         print(circuit[x])
     print()
 
+
+def FaultList(netName):
+
+    #Open circuit file
+
+    netFile = open(netName,'r')
+
+    #Create variables to store data and so to save circuit elements and faults
+
+    inputs = []
+    outputs = []
+    gates = []
+    Faultsl = []
+    counter = 0
+    #Create a dictionary for the circuit to check the correctness of the circuit.bench file
+
+    circuit = {}
+
+    print("Input reading")
+
+    #Circuit read
+    for line in netFile:
+
+        if (line == '\n'):
+            continue
+
+        if(line[0] == '#'):
+            continue
+
+        line = line.replace(" ","")
+        line = line.replace("\n","")
+
+        if (line[0:5] == "INPUT"):
+
+            line = line.replace("INPUT", "")
+            line = line.replace("(", "")
+            line = line.replace(")", "")
+
+            # Format the variable name to wire_*VAR_NAME*
+            line = "wire_" + line
+
+            # Error detection: line being made already exists
+            if line in circuit:
+                msg = "NETLIST ERROR: INPUT LINE \"" + line + "\" ALREADY EXISTS PREVIOUSLY IN NETLIST"
+                print(msg + "\n")
+                return msg
+
+            # Appending to the inputs array and update the inputBits
+            inputs.append(line)
+            # add this wire as an entry to the circuit dictionary
+            circuit[line] = ["INPUT", line, False, 'U']
+
+            line = line.replace("wire_","")
+
+            F = line + "-SA-0"
+            counter += 1
+            Faultsl.append(F)
+            F = line + "-SA-1"
+            Faultsl.append(F)
+            counter += 1
+            continue
+
+        if line[0:6] == "OUTPUT":
+            continue
+
+        lineSpliced = line.split("=")  # splicing the line at the equals sign to get the gate output wire
+
+        gateOut = "wire_" + lineSpliced[0]
+        if gateOut in circuit:
+            msg = "NETLIST ERROR: GATE OUTPUT LINE \"" + gateOut + "\" ALREADY EXISTS PREVIOUSLY IN NETLIST"
+            print(msg + "\n")
+            return msg
+
+            # Appending the dest name to the gate list
+        gates.append(gateOut)
+
+        line = lineSpliced[0]
+
+        F = line + "-SA-0"
+        Faultsl.append(F)
+        counter += 1
+        F = line + "-SA-1"
+        Faultsl.append(F)
+        counter += 1
+        ref_wire = lineSpliced[0]
+
+        lineSpliced = lineSpliced[1].split("(")
+
+        logic = lineSpliced[0].upper
+        lineSpliced[1] = lineSpliced[1].replace(")", "")
+
+        terms = lineSpliced[1].split(",")
+
+        for x in terms:
+
+            F = ref_wire + "-IN-" + x + "-SA-0"
+            Faultsl.append(F)
+            counter += 1
+            F = ref_wire + "-IN-" + x + "-SA-1"
+            Faultsl.append(F)
+            counter += 1
+            continue
+
+        terms = ["wire_" + x for x in terms]
+
+
+        circuit[gateOut] = [logic, terms, False, 'U']
+    line = '\n# total faults: %d' %counter
+    Faultsl.append(line)
+    return Faultsl
+
+
 def NetReader(netName):
     # Open circuit file
 
@@ -347,8 +459,7 @@ def good_sim(circuit):
                 0] + " for:")
             for term in circuit[curr][1]:
                 print(term + " = " + circuit[term][3])
-            print("\nPress Enter to Continue...")
-            input()
+
 
         else:
             # If the terminals have not been accessed yet, append the current node at the end of the queue
@@ -414,8 +525,7 @@ def bad_sim(circuit,fault):
                         0] + " for:")
                 for term in circuit[curr][1]:
                     print(term + " = " + circuit[term][3])
-                print("\nPress Enter to Continue...")
-                input()
+
 
                 # If the terminals have not been accessed yet, append the current node at the end of the queue
             else:
@@ -467,11 +577,20 @@ def main():
             break
         else:
             FaultName = os.path.join(script_dir, userInput)
-            if not os.path.isfile(inputFault):
+            if not os.path.isfile(FaultName):
                 print("File does not exist. \n")
             else:
                 break
 
+        print("\n Do you want to use the full fault list? Enter to accept, type no to select your fault list:")
+        userInput = input()
+        if userInput == "":
+            Faultsl = FaultList(cktFile)
+            with open(FaultName, 'w') as filehandle:
+                for line in Faultsl:
+                    filehandle.write("%s\n" % line)
+                    filehandle.close()
+                    break
 
         # Select output file, default is output.txt
     while True:
@@ -566,15 +685,16 @@ def main():
 
 
                 if (bad_output[j-1] == good_output[i]):
-                    if i < 1:
+                    if RequiredFault[j-1] in undetected:
+                        break
+                    else:
                         undetected.append(RequiredFault[j-1])
-
                 else:
                     if RequiredFault[j-1] in undetected:
                         undetected.remove(RequiredFault[j-1])
 
             circuit = copy.deepcopy(NewCircuit)
-
+        i +=1
 
 
         print(RequiredFault)
@@ -590,7 +710,7 @@ def main():
                     k -= 1
                 else:
                     k -= 1
-            i += 1
+
 
 
     print(undetected)
