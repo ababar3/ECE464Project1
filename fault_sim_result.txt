@@ -1,22 +1,8 @@
 #fault sim result
 #input: circuit
-#input: input.txt
+#input: c:/Users/Szymon/Documents/Coding and Programming/Visual Studio Code/ECE464/Project1-464\ETV_set 0.txt
 #input: f_list.txt
 
 
-tv1 = 010 ->  0 
+tv1 = 000000000000000000000000000000000000 ->  0 
 detected:
-
-tv2 = 111 ->  1 
-detected:
-
-tv3 = 110 ->  0 
-detected:
-
-Total detected faults: 3
-
-undetected faults: 2
-g-IN-B-SA-1
-A-SA-0
-
-fault coverage: 3/5 = 60%

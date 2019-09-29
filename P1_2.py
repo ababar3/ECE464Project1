@@ -568,20 +568,10 @@ def main():
             inputName = os.path.join(script_dir, userInput)
             if not os.path.isfile(inputName):
                 print("File does not exist. \n")
-                return
-
-    while True:
-        print("\n Read fault file: use " + FaultName + "?" + " Enter to accept or type filename: ")
-        userInput = input()
-        if userInput == "":
-            break
-        else:
-            FaultName = os.path.join(script_dir, userInput)
-            if not os.path.isfile(FaultName):
-                print("File does not exist. \n")
             else:
                 break
 
+    while True:
         print("\n Do you want to use the full fault list? Enter to accept, type no to select your fault list:")
         userInput = input()
         if userInput == "":
@@ -589,10 +579,20 @@ def main():
             with open(FaultName, 'w') as filehandle:
                 for line in Faultsl:
                     filehandle.write("%s\n" % line)
-                    filehandle.close()
+                filehandle.close()
+                break
+        elif userInput == "no":
+            print("\n Read fault file: use " + FaultName + "?" + " Enter to accept or type filename: ")
+            userInput = input()
+            if userInput == "":
+                break
+            else:
+                FaultName = os.path.join(script_dir, userInput)
+                if not os.path.isfile(FaultName):
+                    print("File does not exist. \n")
+                else:
                     break
-
-        # Select output file, default is output.txt
+              #  Select output file, default is output.txt
     while True:
         outputName = "fault_sim_result.txt"
         print("\n Write output file: use " + outputName + "?" + " Enter to accept or type filename: ")
