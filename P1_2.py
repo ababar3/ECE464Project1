@@ -569,6 +569,19 @@ def main():
             if not os.path.isfile(inputName):
                 print("File does not exist. \n")
                 return
+            else:
+                break
+
+    print("\n Do you want to use the full fault list? Enter to accept, type no to select your fault list:")
+    userInput = input()
+    if userInput == "":
+        Faultsl = FaultList(cktFile)
+
+        with open(FaultName, 'w') as filehandle:
+            for line in Faultsl:
+                filehandle.write("%s\n" % line)
+            filehandle.close()
+
 
     while True:
         print("\n Read fault file: use " + FaultName + "?" + " Enter to accept or type filename: ")
@@ -582,15 +595,8 @@ def main():
             else:
                 break
 
-        print("\n Do you want to use the full fault list? Enter to accept, type no to select your fault list:")
-        userInput = input()
-        if userInput == "":
-            Faultsl = FaultList(cktFile)
-            with open(FaultName, 'w') as filehandle:
-                for line in Faultsl:
-                    filehandle.write("%s\n" % line)
-                    filehandle.close()
-                    break
+
+
 
         # Select output file, default is output.txt
     while True:
@@ -612,7 +618,7 @@ def main():
     undetected = []
 
     fault = []
-    output = []
+
     good_output = []
     i = 0
     outputFile.write("#fault sim result\n")
@@ -626,7 +632,7 @@ def main():
 
     print("Simulation begins")
     for line in inputFile:
-
+        output = ""
         if (line == "\n"):
             continue
         if (line[0] == "#"):
@@ -644,9 +650,8 @@ def main():
             if not circuit[y][2]:
                 output[i] = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                 break
-            output.append(str(circuit[y][3]))
-        good_output.append(output[i])
-
+            output = str(circuit[y][3]) + output
+        good_output.append(output)
         print("Output of the good circuit:" + good_output[i] + "\n")
         outputFile.write("\ntv%d = %s ->  %s \n" %(i+1, line, good_output[i]))
         outputFile.write("detected:\n")
@@ -655,6 +660,7 @@ def main():
         iteration = 0
 
         while iteration < len(faultList):
+            aux_output = ""
             circuit = inputRead(circuit, line)
             if (faultList[iteration] == ""):
                 iteration += 1
@@ -681,25 +687,25 @@ def main():
                 if not circuit[y][2]:
                     output = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                     break
-                bad_output.append(str(circuit[y][3]))
+                aux_output = str(circuit[y][3]) + aux_output
 
+            bad_output.append(aux_output)
 
-                if (bad_output[j-1] == good_output[i]):
-                    if RequiredFault[j-1] in undetected:
-                        break
-                    else:
-                        undetected.append(RequiredFault[j-1])
-                else:
-                    if RequiredFault[j-1] in undetected:
-                        undetected.remove(RequiredFault[j-1])
+            if (bad_output[j-1] == good_output[i]):
+                if i<1:
+                    undetected.append(RequiredFault[j-1])
+            else:
+                if RequiredFault[j-1] in undetected:
+                    undetected.remove(RequiredFault[j-1])
 
             circuit = copy.deepcopy(NewCircuit)
-        i +=1
+
 
 
         print(RequiredFault)
         print(bad_output)
         print(good_output)
+
         while (i < len(good_output)):
             k = j
 
@@ -710,10 +716,14 @@ def main():
                     k -= 1
                 else:
                     k -= 1
-
+            i += 1
 
 
     print(undetected)
+    if j != (len(faultList)-2):
+        print("Error in the computation of the undetected faults")
+        return -1
+
     unFaults = len(undetected)
     detected = j-unFaults
     outputFile.write("\nTotal detected faults: %d\n" %detected)
