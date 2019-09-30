@@ -13,8 +13,8 @@ def FaultList(netName):
     inputs = []
     outputs = []
     gates = []
-    Faultsl = []
-    counter = 0
+    faultList = []
+    faults = 0
     #Create a dictionary for the circuit to check the correctness of the circuit.bench file
 
     circuit = {}
@@ -55,12 +55,11 @@ def FaultList(netName):
 
             line = line.replace("wire_","")
 
-            F = line + "-SA-0"
-            counter += 1
-            Faultsl.append(F)
-            F = line + "-SA-1"
-            Faultsl.append(F)
-            counter += 1
+            newLine = line + "-SA-0"
+            faultList.append(newLine)
+            line4 = line + "-SA-1"
+            faultList.append(line4)
+            faults += 2
             continue
 
 
@@ -89,13 +88,12 @@ def FaultList(netName):
 
         line = lineSpliced[0]
 
-        F = line + "-SA-0"
-        Faultsl.append(F)
-        counter += 1
-        F = line + "-SA-1"
-        Faultsl.append(F)
-        counter += 1
-        ref_wire = lineSpliced[0]
+        line2 = line + "-SA-0"
+        faultList.append(line2)
+        line2 = line + "-SA-1"
+        faultList.append(line2)
+        faults += 2
+        index = lineSpliced[0]
 
         lineSpliced = lineSpliced[1].split("(")
 
@@ -103,24 +101,24 @@ def FaultList(netName):
         lineSpliced[1] = lineSpliced[1].replace(")", "")
 
         terms = lineSpliced[1].split(",")
+        i = 0
 
-        for x in terms:
-
-            F = ref_wire + "-IN-" + x + "-SA-0"
-            Faultsl.append(F)
-            counter += 1
-            F = ref_wire + "-IN-" + x + "-SA-1"
-            Faultsl.append(F)
-            counter += 1
+        while(i<len(terms)):
+            line3 = index + "-IN-" + str(i) + "-SA-0"
+            faultList.append(line3)
+            line3 = index + "-IN-" + str(i) + "-SA-1"
+            faultList.append(line3)
+            faults += 2
+            i = i + 1
             continue
 
         terms = ["wire_" + x for x in terms]
 
         # add the gate output wire to the circuit dictionary with the dest as the key
         circuit[gateOut] = [logic, terms, False, 'U']
-    line = '# total faults: %d' %counter
-    Faultsl.append(line)
-    return Faultsl
+    line = '\n# total faults: %d' % faults
+    faultList.append(line)
+    return faultList
 
 def main():
 
@@ -143,12 +141,12 @@ def main():
 
     print("Detection possible faults...\n")
 
-    Faultsl= FaultList(cktFile)
+    faultList = FaultList(cktFile)
 
-    print(Faultsl)
+    print(faultList)
 
     while True:
-        outputName = "full_f_list.txt"
+        outputName = "f_list.txt"
         print("\n Write output file: use " + outputName + "?" + " Enter to accept or type filename: ")
         userInput = input()
         if userInput == "":
@@ -158,10 +156,10 @@ def main():
             break
 
     outputFile = open(outputName, 'w')
-    outputFile.write("# circuit.bench \n# full SSA list\n")
+    outputFile.write("# circuit.bench \n# full SSA list\n\n")
 
-    for line in Faultsl:
-        outputFile.write("%s\n" %line)
+    for line in faultList:
+        outputFile.write("%s\n" % line)
 
     outputFile.close()
 

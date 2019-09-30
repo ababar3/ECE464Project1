@@ -2,4 +2,3 @@
 
 # Szymon - Arsalan - Lucia
 
-#GITHUB TEST

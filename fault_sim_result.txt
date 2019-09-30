@@ -1,6 +1,6 @@
 #fault sim result
 #input: circuit
-#input: c:/Users/Szymon/Documents/Coding and Programming/Visual Studio Code/ECE464/Project1-464\ETV_set 0.txt
+#input: /Users/user/Documents/GitHub/ECE464Project1/ETV_set 0.txt
 #input: f_list.txt
 
 
