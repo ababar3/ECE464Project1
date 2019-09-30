@@ -101,12 +101,13 @@ def FaultList(netName):
         lineSpliced[1] = lineSpliced[1].replace(")", "")
 
         terms = lineSpliced[1].split(",")
+
         i = 0
 
         while(i<len(terms)):
-            line3 = index + "-IN-" + str(i) + "-SA-0"
+            line3 = index + "-IN-" + str(terms[i]) + "-SA-0"
             faultList.append(line3)
-            line3 = index + "-IN-" + str(i) + "-SA-1"
+            line3 = index + "-IN-" + str(terms[i]) + "-SA-1"
             faultList.append(line3)
             faults += 2
             i = i + 1

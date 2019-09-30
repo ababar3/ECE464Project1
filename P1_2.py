@@ -732,7 +732,7 @@ def main():
         outputFile.write(x + "\n")
 
     percentage = detected/j*100 #calculates percentage
-    outputFile.write("\nfault coverage: %d/%d = %d" %(detected, j, percentage)) 
+    outputFile.write("\nfault coverage: %d/%d = %d" %(detected, j, percentage))
     outputFile.write('%')
     outputFile.close()
 
