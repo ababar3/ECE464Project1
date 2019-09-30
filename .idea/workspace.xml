@@ -29,7 +29,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.P1_1">
+  <component name="RunManager" selected="Python.P1_2">
     <configuration name="P1_1" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="ECE464Project1" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -74,8 +74,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.P1_1" />
         <item itemvalue="Python.P1_2" />
+        <item itemvalue="Python.P1_1" />
       </list>
     </recent_temporary>
   </component>

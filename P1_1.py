@@ -104,7 +104,7 @@ def FaultList(netName):
 
         i = 0
 
-        while(i<len(terms)):
+        while(i<len(terms)):   # Used while loop here that run until terms length where term has the variable that come after "-IN-" .
             line3 = index + "-IN-" + str(terms[i]) + "-SA-0"
             faultList.append(line3)
             line3 = index + "-IN-" + str(terms[i]) + "-SA-1"

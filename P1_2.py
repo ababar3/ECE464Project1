@@ -720,9 +720,7 @@ def main():
 
 
     print(undetected)#prints undetected list
-    if j != (len(faultList)-2):
-        print("Error in the computation of the undetected faults")
-        return -1
+
 
     unFaults = len(undetected)
     detected = j-unFaults #to calculate the number detected we subtract total - undetected

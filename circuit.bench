@@ -1,22 +1,29 @@
-# circuit.bench
-# 3 inputs
-# 1 output
-# 4 gates
-INPUT(A)
-INPUT(B)
-INPUT(C)
-INPUT(D)
-INPUT(E)
-INPUT(F)
-INPUT(G)
-INPUT(H)
+#Circuit.bench
 
-OUTPUT(O)
+# INPUTS:
+INPUT(X0)
+INPUT(X1)
+INPUT(X2)
+INPUT(X3)
+INPUT(S0)
+INPUT(S1)
 
-I = AND(A,B)
-J = AND(C, D)
-L = OR(E, F)
-M = OR(G, H)
-K= NOT(J)
-N= NOT(M)
-O= NAND(I,K,L,N)
+
+# OUTPUTS:
+OUTPUT(M)
+
+
+# GATES:
+A = NOT(S0)
+B = NOT(S1)
+C = AND(B,A,X0)
+D = AND(S1,A,X1)
+E = AND(B,S0,X2)
+F = AND(S1,S0,X3)
+M = OR(C,D,E,F)
+
+
+
+
+
+
