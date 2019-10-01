@@ -37,7 +37,7 @@ def FaultList(netName):
 
     circuit = {}
 
-    print("Input reading")
+    #print("Input reading")
 
     #Circuit read
     for line in netFile:
@@ -218,11 +218,11 @@ def NetReader(netName):
         circuit["OUTPUTS"] = ["Output list", outputs]
         circuit["GATES"] = ["Gate list", gates]
 
-        print("\n bookkeeping items in circuit: \n")
-        print(circuit["INPUT_WIDTH"])
-        print(circuit["INPUTS"])
-        print(circuit["OUTPUTS"])
-        print(circuit["GATES"])
+        #print("\n bookkeeping items in circuit: \n")
+        #print(circuit["INPUT_WIDTH"])
+        #print(circuit["INPUTS"])
+        #print(circuit["OUTPUTS"])
+        #print(circuit["GATES"])
 
     return circuit
 
@@ -459,10 +459,10 @@ def good_sim(circuit):
                 print(circuit)
                 return circuit
 
-            print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][
-                0] + " for:")
-            for term in circuit[curr][1]:
-                print(term + " = " + circuit[term][3])
+            #print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][
+              #  0] + " for:")
+            #for term in circuit[curr][1]:
+             #   print(term + " = " + circuit[term][3])
 
 
         else:
@@ -487,10 +487,12 @@ def bad_sim(circuit,fault):
     queue = list(circuit["GATES"][1])
     out_wire = ""
     while True:
-
+        flag = False
         # If there's no more things in queue, done
+
         if len(queue) == 0:
             break
+
         if fault[2] == 'S':
             bad_wire = "wire_" + fault[0]
         elif fault[3] == 'I':
@@ -504,18 +506,16 @@ def bad_sim(circuit,fault):
         curr = queue[0]
         queue.remove(curr)
 
-
-        if bad_wire == curr:
-
+        if (bad_wire == curr) and (fault[2] == 'S'):
             circuit[curr][3] = fault[1]
             circuit[curr][2] = True
-            print(circuit)
+            #print(circuit)
         else:
             if (bad_wire in circuit[curr][1]) and (out_wire == curr):
                 flag = True
                 Corr_Input = circuit[bad_wire][3]
                 circuit[bad_wire][3] = fault[2]
-                
+
             term_has_value = True
 
                 # Check if the terminals have been accessed
@@ -535,15 +535,15 @@ def bad_sim(circuit,fault):
                 if isinstance(circuit, str):
                     print(circuit)
                     return circuit
-                
+
                 if flag == True:
                     circuit[bad_wire][3] = Corr_Input
                     flag = False
-                
-                print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][
-                        0] + " for:")
-                for term in circuit[curr][1]:
-                    print(term + " = " + circuit[term][3])
+
+                #print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][
+                 #       0] + " for:")
+                #for term in circuit[curr][1]:
+                 #   print(term + " = " + circuit[term][3])
 
 
                 # If the terminals have not been accessed yet, append the current node at the end of the queue
@@ -603,7 +603,7 @@ def main():
 
 
     while True:
-        print("\n Read fault file: use " + FaultName + "?" + " Enter to accept or type filename: ") #fault file that gets read is here
+        print("\n Read fault file: use " + FaultName + "?" + " Enter to accept or type filename(if you want the full fault list please press enter): ") #fault file that gets read is here
         userInput = input()
         if userInput == "": # if user hits enter it automatically reads f_list.txt
             break
@@ -620,7 +620,7 @@ def main():
         # Select output file, default is output.txt
     while True:
         outputName = "output.txt" #output file
-        print("\n Write output file: use " + outputName + "?" + " Enter to accept or type filename: ") #Check if user wants  to output in output.txt or another file
+        print("\n Write output file: use " + outputName + "?" + " Enter to accept or type filename: ")
         userInput = input()
         if userInput == "":
             break
@@ -688,7 +688,7 @@ def main():
                 iteration += 1
                 continue
 
-            if "-SA-" in faultList[iteration]:  #checks if "-SA- is in faultlist line
+            if "-SA-" in faultList[iteration]: #checks if "-SA- is in faultlist line
                 RequiredFault.append(faultList[iteration]) #stores that faultList line in a list called Required Fault
                 fault = FaultReader(faultList[iteration]) #Reads the fault and returns the neccessary characters needed for fault
                 print("This is the simulation with the fault #: %d" %(j+1))
@@ -706,13 +706,13 @@ def main():
                 if not circuit[y][2]:
                     output = "NETLIST ERROR: OUTPUT LINE \"" + y + "\" NOT ACCESSED"
                     break
-                aux_output = str(circuit[y][3]) + aux_output   #aux_ouput has the output
+                aux_output = str(circuit[y][3]) + aux_output
 
             bad_output.append(aux_output) #this output gets stored in bad_ouput list
 
-            if (bad_output[j-1] == good_output[i]):  #compares bad and good output and if they are same it mean it was undetected
+            if (bad_output[j-1] == good_output[i]): #compares bad and good output and if they are same it mean it was undetected
                 if i<1:
-                    undetected.append(RequiredFault[j-1])  # add fault to undetected list
+                    undetected.append(RequiredFault[j-1]) # add fault to undetected list
             else:
                 if RequiredFault[j-1] in undetected:
                     undetected.remove(RequiredFault[j-1]) # remove undetected if not equals
@@ -721,25 +721,24 @@ def main():
 
 
 
-        print(RequiredFault) #prints the list of all faults
-        print(bad_output) #prints bad output list
-        print(good_output)#prints good output list
+        #print(RequiredFault)
+        #print(bad_output)
+        #print(good_output)
 
-        while (i < len(good_output)): #while runs until the length of good output
+        while (i < len(good_output)):
             k = j
 
             while (k>0):
 
                 if (bad_output[j-k-1] != good_output[i]):
-                    outputFile.write("%s: %s -> %s\n" %(RequiredFault[j-k-1],line, bad_output[j-k-1])) #prints the faults tested for, the input vector and output.
+                    outputFile.write("%s: %s -> %s\n" %(RequiredFault[j-k-1],line, bad_output[j-k-1]))
                     k -= 1
                 else:
                     k -= 1
             i += 1
 
 
-    print(undetected)#prints undetected list
-
+    print(undetected) #prints undetected list
 
     unFaults = len(undetected)
     detected = j-unFaults #to calculate the number detected we subtract total - undetected
