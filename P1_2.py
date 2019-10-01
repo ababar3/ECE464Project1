@@ -416,10 +416,14 @@ def FaultReader(line):
         line = line.replace("-SA","")
         line = line.replace("IN-","")
         line = line.split("-")
-        fault = [line[1], line[2]]
+        flag = 'I'
+        line.append(flag)
+        fault = line
     else:
         line = line.replace("-SA","")
         line = line.split("-")
+        flag = 'S'
+        line.append(flag)
         fault = line
     return fault
 
@@ -481,14 +485,20 @@ def Fault_Input(circuit, fault):
 
 def bad_sim(circuit,fault):
     queue = list(circuit["GATES"][1])
-
+    out_wire = ""
     while True:
 
         # If there's no more things in queue, done
         if len(queue) == 0:
             break
-        bad_wire = "wire_" + fault[0]
-
+        if fault[2] == 'S':
+            bad_wire = "wire_" + fault[0]
+        elif fault[3] == 'I':
+            bad_wire = "wire_" + fault[1]
+            out_wire = "wire_" + fault[0]
+        else:
+            print("Error in the fault format")
+            return -1
         # Remove the first element of the queue and assign it to a variable for us to use
 
         curr = queue[0]
@@ -501,6 +511,11 @@ def bad_sim(circuit,fault):
             circuit[curr][2] = True
             print(circuit)
         else:
+            if (bad_wire in circuit[curr][1]) and (out_wire == curr):
+                flag = True
+                Corr_Input = circuit[bad_wire][3]
+                circuit[bad_wire][3] = fault[2]
+                
             term_has_value = True
 
                 # Check if the terminals have been accessed
@@ -520,7 +535,11 @@ def bad_sim(circuit,fault):
                 if isinstance(circuit, str):
                     print(circuit)
                     return circuit
-
+                
+                if flag == True:
+                    circuit[bad_wire][3] = Corr_Input
+                    flag = False
+                
                 print("Progress: updating " + curr + " = " + circuit[curr][3] + " as the output of " + circuit[curr][
                         0] + " for:")
                 for term in circuit[curr][1]:
